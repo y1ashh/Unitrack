@@ -16,8 +16,8 @@ export default async function UniversityDetailPage({ params }: { params: { slug:
   if (!university && process.env.UNIVERSITY_TRACKER_LIVE_DATA === 'true') {
     const prisma = getPrisma();
     if (prisma) {
-      const records = await prisma.institution.findMany({ include: { country: true, city: true } });
-      const record = records.find((item) => slugify(item.officialName) === params.slug);
+     const records = await prisma.institution.findMany({ include: { country: true, city: true } });
+const record = records.find((item: typeof records[number]) => slugify(item.officialName) === params.slug);
       if (record) {
         liveRecord = true;
         const verified = record.updatedAt.toISOString().slice(0, 10);
