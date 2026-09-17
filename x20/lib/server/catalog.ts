@@ -45,79 +45,9 @@ export async function searchCatalog(query: CatalogQuery): Promise<CatalogResult>
     prisma.scholarship.findMany({ where: query.country ? { country: { name: query.country } } : q ? { OR: [{ name: { contains: q, mode: 'insensitive' } }, { provider: { contains: q, mode: 'insensitive' } }] } : {}, include: { country: true } }),
   ]);
   return { 
-    programs: programs.map((item: typeof 
-    programs[number]) => {
     mode: 'live',
-   13:22:36.967 
- 48 |     mode: 'live',
-13:22:36.967 
- 49 |    programs.map((item: typeof programs[number]) => {
-13:22:36.969 
-    :            ^
-13:22:36.969 
- 50 |       const sourceMetadata = getUniversitySourceMetadata(item.institution.officialName);
-13:22:36.969 
- 51 |       const verified = item.updatedAt.toISOString().slice(0, 10);
-13:22:36.969 
- 52 |       return {
-13:22:36.969 
-    `----
-13:22:36.969 
-13:22:36.969 
-Caused by:
-13:22:36.969 
-    Syntax Error
-13:22:36.969 
-13:22:36.970 
-Import trace for requested module:
-13:22:36.970 
-./lib/server/catalog.ts
-13:22:36.970 
-./app/page.tsx
-13:22:36.970 
-13:22:36.984 
-13:22:36.984 
-> Build failed because of webpack errors
-13:22:37.008 
- ELIFECYCLE  Command failed with exit code 1.
-13:22:37.157 
-Error: Command "pnpm run build" exited with 1
-
-    13:22:36.967 
- 48 |     mode: 'live',
-13:22:36.967 
- 49 |    programs.map((item: typeof programs[number]) => {
-13:22:36.969 
-    :            ^
-13:22:36.969 
- 50 |       const sourceMetadata = getUniversitySourceMetadata(item.institution.officialName);
-13:22:36.969 
- 51 |       const verified = item.updatedAt.toISOString().slice(0, 10);
-13:22:36.969 
- 52 |       return {
-13:22:36.969 
-    `----
-13:22:36.969 
-13:22:36.969 
-Caused by:
-13:22:36.969 
-    Syntax Error
-13:22:36.969 
-13:22:36.970 
-Import trace for requested module:
-13:22:36.970 
-./lib/server/catalog.ts
-13:22:36.970 
-./app/page.tsx
-13:22:36.970 
-13:22:36.984 
-13:22:36.984 
-> Build failed because of webpack errors
-13:22:37.008 
- ELIFECYCLE  Command failed with exit code 1.
-13:22:37.157 
-Error: Command "pnpm run build" exited with 1
-
+     programs: programs.map((item: typeof 
+    programs[number]) => {
       const sourceMetadata = getUniversitySourceMetadata(item.institution.officialName);
       const verified = item.updatedAt.toISOString().slice(0, 10);
       return {
