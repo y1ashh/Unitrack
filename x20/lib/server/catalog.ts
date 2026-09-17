@@ -46,7 +46,7 @@ export async function searchCatalog(query: CatalogQuery): Promise<CatalogResult>
   ]);
   return {
     mode: 'live',
-    programs: programs.map((item) => {
+   programs.map((item: typeof programs[number]) => {
       const sourceMetadata = getUniversitySourceMetadata(item.institution.officialName);
       const verified = item.updatedAt.toISOString().slice(0, 10);
       return {
