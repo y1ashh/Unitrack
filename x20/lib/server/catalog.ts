@@ -45,7 +45,8 @@ export async function searchCatalog(query: CatalogQuery): Promise<CatalogResult>
     prisma.scholarship.findMany({ where: query.country ? { country: { name: query.country } } : q ? { OR: [{ name: { contains: q, mode: 'insensitive' } }, { provider: { contains: q, mode: 'insensitive' } }] } : {}, include: { country: true } }),
   ]);
   return { 
-    programs: programs.map((item: typeof programs[number]) => {
+    programs: programs.map((item: typeof 
+    programs[number]) => {
     mode: 'live',
    13:22:36.967 
  48 |     mode: 'live',
