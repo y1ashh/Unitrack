@@ -1,0 +1,450 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum InstitutionType {
+  PUBLIC
+  PRIVATE
+  NATIONAL
+  COLLEGIATE
+  RESEARCH
+  OTHER
+}
+
+enum StudyMode {
+  FULL_TIME
+  PART_TIME
+  ONLINE
+  HYBRID
+  ON_CAMPUS
+}
+
+enum ApplicantType {
+  DOMESTIC
+  INTERNATIONAL
+}
+
+enum SourceKind {
+  GOVERNMENT
+  OFFICIAL_UNIVERSITY
+  OFFICIAL_PROGRAM
+  OFFICIAL_ADMISSIONS
+  OFFICIAL_SCHOLARSHIP
+  THIRD_PARTY
+  ESTIMATED
+}
+
+enum DataStatus {
+  VERIFIED
+  NEEDS_REVIEW
+  ESTIMATED
+  UNAVAILABLE
+  CONFLICTING
+}
+
+enum EligibilityState {
+  CONFIRMED_ELIGIBLE
+  CONFIRMED_NOT_ELIGIBLE
+  UNKNOWN
+}
+
+enum ApplicationStatus {
+  RESEARCHING
+  SHORTLISTED
+  PREPARING
+  STARTED
+  SUBMITTED
+  INTERVIEW
+  DECISION_PENDING
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+}
+
+model Country {
+  id                String         @id @default(cuid())
+  code              String         @unique
+  name              String         @unique
+  currencyCode      String?
+  qualificationNote String?
+  jurisdictions     Jurisdiction[]
+  applicantProfiles  ApplicantProfile[]
+  cities            City[]
+  institutions      Institution[]
+  degrees           Degree[]
+  scholarships      Scholarship[]
+  admissionRequirements AdmissionRequirement[]
+  scholarshipEligibilities ScholarshipEligibility[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model Jurisdiction {
+  id           String        @id @default(cuid())
+  name         String
+  countryId    String
+  country      Country       @relation(fields: [countryId], references: [id])
+  regions      Region[]
+  institutions Institution[]
+  @@unique([countryId, name])
+}
+
+model Region {
+  id             String        @id @default(cuid())
+  name           String
+  jurisdictionId String
+  jurisdiction   Jurisdiction  @relation(fields: [jurisdictionId], references: [id])
+  cities         City[]
+  @@unique([jurisdictionId, name])
+}
+
+model City {
+  id           String       @id @default(cuid())
+  name         String
+  countryId    String
+  regionId     String?
+  country      Country      @relation(fields: [countryId], references: [id])
+  region       Region?      @relation(fields: [regionId], references: [id])
+  institutions Institution[]
+  campuses     Campus[]
+  @@unique([countryId, name])
+}
+
+model Institution {
+  id              String          @id @default(cuid())
+  stableKey       String          @unique
+  officialName    String
+  commonName      String?
+  type            InstitutionType
+  countryId       String
+  jurisdictionId  String?
+  cityId          String?
+  country         Country         @relation(fields: [countryId], references: [id])
+  jurisdiction    Jurisdiction?  @relation(fields: [jurisdictionId], references: [id])
+  city            City?           @relation(fields: [cityId], references: [id])
+  website         String?
+  admissionsUrl   String?
+  campuses        Campus[]
+  faculties       Faculty[]
+  programs        Program[]
+  sources         Source[]
+  assertions      DataAssertion[]
+  savedBy         SavedInstitution[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Campus {
+  id            String      @id @default(cuid())
+  stableKey     String      @unique
+  name          String
+  institutionId String
+  cityId        String?
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  city          City?       @relation(fields: [cityId], references: [id])
+  programs      Program[]
+}
+
+model Faculty {
+  id            String      @id @default(cuid())
+  name          String
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  departments   Department[]
+  programs      Program[]
+  @@unique([institutionId, name])
+}
+
+model Department {
+  id        String    @id @default(cuid())
+  name      String
+  facultyId String
+  faculty   Faculty   @relation(fields: [facultyId], references: [id])
+  programs  Program[]
+  @@unique([facultyId, name])
+}
+
+model Subject {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  programs  Program[]
+}
+
+model Degree {
+  id        String    @id @default(cuid())
+  name      String
+  level     String
+  countryId String?
+  country   Country?  @relation(fields: [countryId], references: [id])
+  programs  Program[]
+  @@unique([name, level, countryId])
+}
+
+model Program {
+  id                    String                @id @default(cuid())
+  stableKey             String                @unique
+  slug                  String                @unique
+  officialName          String
+  institutionId         String
+  campusId              String?
+  facultyId             String?
+  departmentId          String?
+  subjectId             String?
+  degreeId              String?
+  institution           Institution           @relation(fields: [institutionId], references: [id])
+  campus                Campus?               @relation(fields: [campusId], references: [id])
+  faculty               Faculty?              @relation(fields: [facultyId], references: [id])
+  department            Department?           @relation(fields: [departmentId], references: [id])
+  subject               Subject?              @relation(fields: [subjectId], references: [id])
+  degree                Degree?               @relation(fields: [degreeId], references: [id])
+  level                 String
+  mode                  StudyMode
+  duration              String?
+  intake                String?
+  language              String?
+  overview              String?
+  requirements          AdmissionRequirement[]
+  codes                 ProgramCode[]
+  fees                  Fee[]
+  deadlines             Deadline[]
+  scholarships          ScholarshipProgram[]
+  sources               Source[]
+  assertions            DataAssertion[]
+  savedBy               SavedProgram[]
+  applications          ApplicationEntry[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+}
+
+model ProgramCode {
+  id         String   @id @default(cuid())
+  programId  String
+  issuer     String
+  codeType   String
+  value      String
+  sourceId   String?
+  program    Program  @relation(fields: [programId], references: [id])
+  source     Source?  @relation(fields: [sourceId], references: [id])
+  @@unique([programId, issuer, codeType, value])
+}
+
+model Classification {
+  id         String   @id @default(cuid())
+  scheme     String
+  code       String
+  label      String?
+  sourceId   String?
+  source     Source?  @relation(fields: [sourceId], references: [id])
+  @@unique([scheme, code])
+}
+
+model AdmissionRequirement {
+  id               String          @id @default(cuid())
+  programId        String
+  applicantType    ApplicantType
+  applicantCountryId String?
+  category         String
+  title            String
+  detail           String
+  status           DataStatus      @default(NEEDS_REVIEW)
+  program          Program         @relation(fields: [programId], references: [id])
+  applicantCountry Country?        @relation(fields: [applicantCountryId], references: [id])
+  sources          Source[]
+  @@index([programId, applicantType])
+}
+
+model ApplicantProfile {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  type         ApplicantType
+  countryId    String?
+  user         User          @relation(fields: [userId], references: [id])
+  country      Country?      @relation(fields: [countryId], references: [id])
+  updatedAt    DateTime      @updatedAt
+}
+
+model Fee {
+  id          String      @id @default(cuid())
+  programId   String
+  label       String
+  amount      Decimal?
+  currency    String?
+  period      String?
+  applicantType ApplicantType?
+  status      DataStatus  @default(NEEDS_REVIEW)
+  program     Program     @relation(fields: [programId], references: [id])
+  sources     Source[]
+}
+
+model Scholarship {
+  id             String                 @id @default(cuid())
+  stableKey      String                 @unique
+  name           String
+  provider       String
+  countryId      String?
+  country        Country?               @relation(fields: [countryId], references: [id])
+  amount         String?
+  coverage       String?
+  deadline       String?
+  level          String?
+  officialUrl    String?
+  lastVerifiedAt DateTime?
+  status         DataStatus             @default(NEEDS_REVIEW)
+  programs       ScholarshipProgram[]
+  eligibilities  ScholarshipEligibility[]
+  deadlines      Deadline[]
+  sources        Source[]
+  savedBy        SavedScholarship[]
+}
+
+model ScholarshipProgram {
+  scholarshipId String
+  programId     String
+  scholarship   Scholarship @relation(fields: [scholarshipId], references: [id])
+  program       Program     @relation(fields: [programId], references: [id])
+  @@id([scholarshipId, programId])
+}
+
+model ScholarshipEligibility {
+  id              String          @id @default(cuid())
+  scholarshipId   String
+  applicantType   ApplicantType?
+  countryId       String?
+  state           EligibilityState @default(UNKNOWN)
+  detail          String
+  scholarship     Scholarship     @relation(fields: [scholarshipId], references: [id])
+  country         Country?        @relation(fields: [countryId], references: [id])
+}
+
+model Deadline {
+  id            String          @id @default(cuid())
+  programId     String?
+  scholarshipId String?
+  label         String
+  date          DateTime?
+  applicantType ApplicantType?
+  status        DataStatus      @default(NEEDS_REVIEW)
+  program       Program?        @relation(fields: [programId], references: [id])
+  scholarship   Scholarship?    @relation(fields: [scholarshipId], references: [id])
+  sources       Source[]
+}
+
+model Source {
+  id                   String                 @id @default(cuid())
+  kind                 SourceKind
+  label                String
+  url                  String
+  publishedAt          DateTime?
+  lastVerifiedAt       DateTime?
+  freshnessDays        Int?
+  institutionId        String?
+  programId            String?
+  scholarshipId        String?
+  requirementId        String?
+  feeId                String?
+  deadlineId           String?
+  institution          Institution?           @relation(fields: [institutionId], references: [id])
+  program              Program?               @relation(fields: [programId], references: [id])
+  scholarship          Scholarship?           @relation(fields: [scholarshipId], references: [id])
+  requirement          AdmissionRequirement?  @relation(fields: [requirementId], references: [id])
+  fee                  Fee?                   @relation(fields: [feeId], references: [id])
+  deadline             Deadline?              @relation(fields: [deadlineId], references: [id])
+  programCodes         ProgramCode[]
+  classifications      Classification[]
+  assertions            DataAssertion[]
+}
+
+model DataAssertion {
+  id             String        @id @default(cuid())
+  stableKey      String        @unique
+  field          String
+  value          String
+  status         DataStatus    @default(NEEDS_REVIEW)
+  institutionId  String?
+  programId      String?
+  sourceId       String?
+  verifiedAt     DateTime?
+  institution    Institution?  @relation(fields: [institutionId], references: [id])
+  program        Program?      @relation(fields: [programId], references: [id])
+  source         Source?       @relation(fields: [sourceId], references: [id])
+}
+
+model User {
+  id                String              @id @default(cuid())
+  email             String              @unique
+  displayName       String?
+  applicantProfile  ApplicantProfile?
+  savedLists        SavedList[]
+  savedInstitutions SavedInstitution[]
+  savedPrograms     SavedProgram[]
+  savedScholarships SavedScholarship[]
+  applications      ApplicationEntry[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model SavedList {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  user      User     @relation(fields: [userId], references: [id])
+  programs  SavedProgram[]
+  createdAt DateTime @default(now())
+  @@unique([userId, name])
+}
+
+model SavedInstitution {
+  userId        String
+  institutionId String
+  user          User        @relation(fields: [userId], references: [id])
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  @@id([userId, institutionId])
+}
+
+model SavedProgram {
+  userId    String
+  programId String
+  listId    String?
+  user      User       @relation(fields: [userId], references: [id])
+  program   Program    @relation(fields: [programId], references: [id])
+  list      SavedList? @relation(fields: [listId], references: [id])
+  @@id([userId, programId])
+}
+
+model SavedScholarship {
+  userId       String
+  scholarshipId String
+  user         User       @relation(fields: [userId], references: [id])
+  scholarship  Scholarship @relation(fields: [scholarshipId], references: [id])
+  @@id([userId, scholarshipId])
+}
+
+model ApplicationEntry {
+  id              String            @id @default(cuid())
+  userId          String
+  programId       String
+  status          ApplicationStatus @default(RESEARCHING)
+  notes           String?
+  applicationDate DateTime?
+  user            User              @relation(fields: [userId], references: [id])
+  program         Program           @relation(fields: [programId], references: [id])
+  tasks           ApplicationTask[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  @@unique([userId, programId])
+}
+
+model ApplicationTask {
+  id            String           @id @default(cuid())
+  applicationId String
+  title         String
+  dueDate       DateTime?
+  completedAt   DateTime?
+  application   ApplicationEntry @relation(fields: [applicationId], references: [id])
+}

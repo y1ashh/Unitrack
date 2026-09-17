@@ -1,0 +1,6 @@
+import { AppShell, Breadcrumbs, PageIntro, ProgramCard, SectionHeading } from '@/components/core';
+import { programs, subjects } from '@/lib/data';
+
+export default function ProgramsPage() {
+  return <AppShell eyebrow="Program-level detail"><section className="page-hero"><div className="page-container"><Breadcrumbs items={[{ label: 'Programs' }]} /><PageIntro eyebrow="The unit of the decision" title="Programs, not just names." description="A program has its own structure, cost, requirements, calendar, and source trail. Start with the course you would actually attend." /></div></section><div className="page-container page-content"><SectionHeading eyebrow="Recently updated" title="Program records" link="Open search & filters" href="/discover?type=programs" /><div className="program-grid">{programs.map((program, i) => <ProgramCard key={program.id} program={program} featured={i === 0} />)}</div><section className="content-section"><SectionHeading eyebrow="Browse a field" title="Subjects in the directory" /><div className="country-grid">{subjects.map((subject) => <a className="country-tile" href={`/discover?subject=${encodeURIComponent(subject)}`} key={subject}><span className="country-code">FIELD</span><h3>{subject}</h3><p>Explore this subject ↗</p></a>)}</div></section></div></AppShell>;
+}
