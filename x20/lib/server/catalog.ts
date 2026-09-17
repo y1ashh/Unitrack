@@ -79,7 +79,7 @@ export async function searchCatalog(query: CatalogQuery): Promise<CatalogResult>
         scholarshipIds: [],
       };
     }),
-    universities: universities.map((item) => {
+    universities: universities.map((item: typeof universities[number]) => {
       const sourceMetadata = getUniversitySourceMetadata(item.officialName);
       const website = item.website || sourceMetadata?.website || '';
       const verified = item.updatedAt.toISOString().slice(0, 10);
